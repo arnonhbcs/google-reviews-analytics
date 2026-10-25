@@ -40,6 +40,7 @@ ARGS = (
     "--lang=pt-BR",
 )
 HIDE = "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+BLOCKED = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif", "*googleusercontent.com/*"]
 SCROLL = """
 const feeds = [...document.querySelectorAll('div')].filter(el => {
     const style = getComputedStyle(el).overflowY;
@@ -60,6 +61,8 @@ def create_driver(profile):
     driver.execute_cdp_cmd(
         "Page.addScriptToEvaluateOnNewDocument", {"source": HIDE}
     )
+    driver.execute_cdp_cmd("Network.enable", {})
+    driver.execute_cdp_cmd("Network.setBlockedURLs", {"urls": BLOCKED})
     return driver
 
 
@@ -81,7 +84,7 @@ def pause(mean=2.0, std=0.5):
 
 
 def find(driver, xpaths, timeout=15):
-    pause()
+    pause(0.8, 0.2)
     conditions = (EC.element_to_be_clickable((By.XPATH, x)) for x in xpaths)
     return WebDriverWait(driver, timeout).until(EC.any_of(*conditions))
 
