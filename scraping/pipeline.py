@@ -10,6 +10,11 @@ def scrape(con, place_id, url, profile):
     try:
         with browser.session(profile) as driver:
             browser.open_reviews(driver, url)
+            total = browser.total_reviews(driver)
+            if total:
+                repository.set_total_reviews(con, place_id, total)
+                logging.info("%s: Google Maps lists %d reviews", place_id, total)
+            browser.sort_newest(driver)
             for page, body in enumerate(browser.responses(driver), 1):
                 page_reviews, token = reviews.parse_page(body)
                 new += repository.insert_reviews(con, place_id, page_reviews)
