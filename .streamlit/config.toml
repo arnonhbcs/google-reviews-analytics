@@ -1,0 +1,15 @@
+[theme]
+base = "dark"
+primaryColor = "#F2C14E"
+backgroundColor = "#131A2A"
+secondaryBackgroundColor = "#1C2538"
+textColor = "#E8EBF3"
+borderColor = "#2B3550"
+dataframeBorderColor = "#2B3550"
+dataframeHeaderBackgroundColor = "#1C2538"
+chartCategoricalColors = ["#F2C14E", "#8E98B3"]
+baseRadius = "0.5rem"
+showWidgetBorder = true
+
+[browser]
+gatherUsageStats = false
