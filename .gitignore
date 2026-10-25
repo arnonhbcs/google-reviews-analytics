@@ -6,3 +6,4 @@ data/
 *.duckdb.wal
 screenshots/
 .chrome-profile/
+.streamlit/secrets.toml
