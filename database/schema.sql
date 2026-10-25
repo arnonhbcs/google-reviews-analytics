@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     rating      INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment     VARCHAR,
     created_at  TIMESTAMP NOT NULL,
+    updated_at  TIMESTAMP,
     scraped_at  TIMESTAMP NOT NULL
 );
 

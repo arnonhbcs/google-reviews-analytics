@@ -1,4 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def upsert_place(con, place_id, name, url, category=None, total_reviews=None):
@@ -13,42 +17,36 @@ def upsert_place(con, place_id, name, url, category=None, total_reviews=None):
             total_reviews = coalesce(excluded.total_reviews, places.total_reviews),
             updated_at = excluded.updated_at
         """,
-        [place_id, name, url, category, total_reviews, datetime.now()],
+        [place_id, name, url, category, total_reviews, utcnow()],
     )
 
 
-def insert_reviews(con, reviews):
+def insert_reviews(con, place_id, reviews):
     if not reviews:
         return 0
-    before = con.execute("SELECT count(*) FROM reviews").fetchone()[0]
-    scraped_at = datetime.now()
+    count = "SELECT count(*) FROM reviews"
+    before = con.execute(count).fetchone()[0]
+    scraped_at = utcnow()
     con.executemany(
         """
-        INSERT INTO reviews (review_id, place_id, author_hash, rating, comment, created_at, scraped_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT (review_id) DO NOTHING
+        INSERT INTO reviews (
+            review_id, place_id, author_hash, rating,
+            comment, created_at, updated_at, scraped_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (review_id) DO UPDATE SET
+            rating = excluded.rating,
+            comment = excluded.comment,
+            updated_at = excluded.updated_at,
+            scraped_at = excluded.scraped_at
         """,
         [
-            [
-                review["review_id"],
-                review["place_id"],
-                review.get("author_hash"),
-                review["rating"],
-                review.get("comment"),
-                review["created_at"],
-                scraped_at,
-            ]
-            for review in reviews
+            [r["review_id"], place_id, r["author_hash"], r["rating"],
+             r["comment"], r["created_at"], r["updated_at"], scraped_at]
+            for r in reviews
         ],
     )
-    after = con.execute("SELECT count(*) FROM reviews").fetchone()[0]
-    return after - before
-
-
-def latest_review_at(con, place_id):
-    return con.execute(
-        "SELECT max(created_at) FROM reviews WHERE place_id = ?", [place_id]
-    ).fetchone()[0]
+    return con.execute(count).fetchone()[0] - before
 
 
 def start_run(con, place_id):
@@ -58,41 +56,13 @@ def start_run(con, place_id):
         VALUES (?, ?, 'running')
         RETURNING run_id
         """,
-        [place_id, datetime.now()],
+        [place_id, utcnow()],
     ).fetchone()[0]
 
 
-def save_checkpoint(con, run_id, next_page_url, pages_fetched, reviews_new):
+def update_run(con, run_id, **fields):
+    columns = ", ".join(f"{name} = ?" for name in fields)
     con.execute(
-        """
-        UPDATE scrape_runs
-        SET last_page_url = ?, pages_fetched = ?, reviews_new = ?
-        WHERE run_id = ?
-        """,
-        [next_page_url, pages_fetched, reviews_new, run_id],
+        f"UPDATE scrape_runs SET {columns} WHERE run_id = ?",
+        [*fields.values(), run_id],
     )
-
-
-def finish_run(con, run_id, status, error=None):
-    con.execute(
-        """
-        UPDATE scrape_runs
-        SET finished_at = ?, status = ?, error = ?
-        WHERE run_id = ?
-        """,
-        [datetime.now(), status, error, run_id],
-    )
-
-
-def last_unfinished_run(con, place_id):
-    return con.execute(
-        """
-        SELECT run_id, last_page_url
-        FROM scrape_runs
-        WHERE place_id = ?
-          AND status IN ('running', 'failed')
-          AND last_page_url IS NOT NULL
-          AND run_id = (SELECT max(run_id) FROM scrape_runs WHERE place_id = ?)
-        """,
-        [place_id, place_id],
-    ).fetchone()
