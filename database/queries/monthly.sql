@@ -1,16 +1,21 @@
 WITH monthly AS (
-    SELECT place_id,
-           date_trunc('month', created_at) AS month,
+    SELECT p.name AS place,
+           date_trunc('month', r.created_at) AS month,
            count(*) AS n_reviews,
-           avg(rating) AS avg_rating
-    FROM reviews
+           sum(r.rating) AS rating_sum
+    FROM reviews r
+    JOIN places p USING (place_id)
     GROUP BY ALL
 )
-SELECT *,
-       avg(avg_rating) OVER (
-           PARTITION BY place_id
-           ORDER BY month
-           ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-       ) AS rolling_3m
+SELECT place,
+       month,
+       n_reviews,
+       rating_sum / n_reviews AS avg_rating,
+       sum(rating_sum) OVER w / sum(n_reviews) OVER w AS rolling_3m
 FROM monthly
-ORDER BY place_id, month;
+WINDOW w AS (
+    PARTITION BY place
+    ORDER BY month
+    RANGE BETWEEN INTERVAL 2 MONTH PRECEDING AND CURRENT ROW
+)
+ORDER BY place, month;

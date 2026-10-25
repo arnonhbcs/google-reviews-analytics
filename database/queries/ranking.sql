@@ -7,7 +7,7 @@ prior AS (
     SELECT avg(rating) AS global_mean, 20 AS m
     FROM reviews
 )
-SELECT p.name,
+SELECT p.name AS place,
        s.n,
        round(s.avg_rating, 2) AS avg_rating,
        round((prior.m * prior.global_mean + s.total) / (prior.m + s.n), 2) AS bayesian_rating
