@@ -21,6 +21,13 @@ def upsert_place(con, place_id, name, url, category=None, total_reviews=None):
     )
 
 
+def set_total_reviews(con, place_id, total):
+    con.execute(
+        "UPDATE places SET total_reviews = ?, updated_at = ? WHERE place_id = ?",
+        [total, utcnow(), place_id],
+    )
+
+
 def insert_reviews(con, place_id, reviews):
     if not reviews:
         return 0
