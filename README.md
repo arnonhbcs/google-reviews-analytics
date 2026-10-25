@@ -2,9 +2,19 @@
 
 A pipeline that collects the Google Maps reviews of a place, stores them in a local database and shows them in an interactive dashboard. It answers three questions about the place: how well it is rated, how certain that rating is, and how it has changed over time.
 
-The current data covers Cabana Burger, a burger restaurant in São José dos Campos, Brazil.
+The current data covers Cabana Burger, a burger restaurant in São José dos Campos, Brazil. Built with Python: Selenium for scraping, DuckDB and SQL for storage, a Bayesian model for the ratings and Streamlit for the dashboard.
 
 ![Dashboard](docs/dashboard.png)
+
+## Technologies
+
+| Area | Technologies | Where |
+|---|---|---|
+| Web scraping and automation | Python, Selenium, Chrome DevTools Protocol | [`scraping/`](scraping/) |
+| Data storage and SQL | DuckDB, SQL (CTEs, window functions, upserts) | [`database/`](database/) |
+| Statistics | Bayesian inference (Dirichlet-multinomial model), NumPy, pandas | [`dashboard/stats.py`](dashboard/stats.py) |
+| Data visualization | Streamlit, Altair | [`dashboard/app.py`](dashboard/app.py) |
+| Deployment | Streamlit Community Cloud, with a committed data snapshot | [`snapshot/`](snapshot/) |
 
 ## How it works
 
@@ -104,13 +114,6 @@ Requirements: Python 3.12 and Google Chrome.
 - **Partial coverage.** Google stops answering during long collections, so the reviews older than January 2022 were not collected. Running the scraper again later picks up more reviews, without duplicates.
 - **Undocumented interface.** The scraper depends on the Maps layout and on an internal RPC call, which Google can change without notice. Selectors have fallbacks, but a change can still break the collection.
 - **Terms of use.** Scraping Google Maps goes against its terms of service. This is an educational project: it collects a small volume, with pauses between actions, from a single test account.
-
-## Tools
-
-- Selenium and Chrome DevTools Protocol
-- DuckDB
-- pandas and NumPy
-- Streamlit and Altair
 
 ## References
 
