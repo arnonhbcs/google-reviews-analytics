@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 data/
 *.duckdb
+!snapshot/reviews.duckdb
 *.duckdb.wal
 screenshots/
 .chrome-profile/
