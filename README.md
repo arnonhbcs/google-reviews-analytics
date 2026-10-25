@@ -4,7 +4,9 @@ A pipeline that collects the Google Maps reviews of a place, stores them in a lo
 
 The current data covers Cabana Burger, a burger restaurant in São José dos Campos, Brazil. Built with Python: Selenium for scraping, DuckDB and SQL for storage, a Bayesian model for the ratings and Streamlit for the dashboard.
 
-![Dashboard](docs/dashboard.png)
+**[Open the live dashboard](https://app-reviews-analytics-e2xulewcn2tbbuekmhtcw5.streamlit.app/)**
+
+[![Dashboard](docs/dashboard.png)](https://app-reviews-analytics-e2xulewcn2tbbuekmhtcw5.streamlit.app/)
 
 ## Technologies
 
